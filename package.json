@@ -1,0 +1,19 @@
+{
+  "name": "@ydv/function",
+  "version": "0.0.0",
+  "scripts": {
+    "test": "standard && tape test.js"
+  },
+  "dependencies": {
+    "@ydv/logger": "^1.0.2",
+    "@ydv/mongo": "^1.1.1",
+    "node-http-error": "^2.0.0",
+    "querystring": "^0.2.0",
+    "sls-promise": "^1.0.6"
+  },
+  "devDependencies": {
+    "proxyquire": "^2.0.1",
+    "standard": "^11.0.1",
+    "tape": "^4.9.1"
+  }
+}

@@ -28,3 +28,20 @@ test('ok', t => {
     t.end()
   })
 })
+
+test('advanced error', t => {
+  const ErrorCtor = () => {
+    const err = new Error()
+    err.code = 'MY_CODE'
+    err.message = 'My Message'
+    err.statusCode = 401
+    return err
+  }
+  const fn = createFn((event, context) => {
+    throw ErrorCtor()
+  })
+  fn({}, {}, (err, result) => {
+    t.notOk(err)
+    console.log(result)
+  })
+})

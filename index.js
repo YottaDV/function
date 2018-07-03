@@ -13,9 +13,6 @@ function createFunction (fn, { json = true } = {}) {
       const code = result && result.statusCode
       if (code < 200 || code >= 400) {
         context.log.silly('error response:', result)
-        if (result.code && result.message) {
-          result.body = {code: result.code, message: result.message}
-        }
       }
       callback(error, result)
     })
@@ -54,7 +51,10 @@ function createFunction (fn, { json = true } = {}) {
     function handleError (error) {
       error.statusCode = error.status || error.statusCode || 500
       context.log.silly(error.stack)
-      return Promise.reject(error)
+      return Promise.reject(slsp.response({
+        statusCode: error.statusCode,
+        body: { code: error.code, message: error.message }
+      }))
     }
   }
 }

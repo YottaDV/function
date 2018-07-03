@@ -13,6 +13,9 @@ function createFunction (fn, { json = true } = {}) {
       const code = result && result.statusCode
       if (code < 200 || code >= 400) {
         context.log.silly('error response:', result)
+        if (result.code && result.message) {
+          result.body = {code: result.code, message: result.message}
+        }
       }
       callback(error, result)
     })

@@ -1,6 +1,6 @@
 {
   "name": "@ydv/function",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "scripts": {
     "test": "standard && tape test.js"
   },

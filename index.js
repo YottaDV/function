@@ -9,6 +9,8 @@ module.exports = createFunction
 function createFunction (fn, { json = true } = {}) {
   const wrapped = slsp(wrapHandler)
   return function handler (event, context, callback) {
+    context.log = Logger(`${event.httpMethod} ${event.resource}`)
+
     return wrapped(event, context, function (error, result) {
       const code = result && result.statusCode
       if (code < 200 || code >= 400) {
@@ -32,8 +34,6 @@ function createFunction (fn, { json = true } = {}) {
       .catch(handleError)
 
     function runHandler () {
-      context.log = Logger(`${event.httpMethod} ${event.resource}`)
-
       if (json && event.body) {
         try {
           event.body = JSON.parse(event.body)

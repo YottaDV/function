@@ -42,6 +42,16 @@ test('advanced error', t => {
   })
   fn({}, {}, (err, result) => {
     t.notOk(err)
-    console.log(result)
+    t.deepEqual(result, {
+      statusCode: 401,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        code: 'MY_CODE',
+        message: 'My Message'
+      })
+    })
+    t.end()
   })
 })

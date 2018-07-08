@@ -4,9 +4,11 @@ const HttpError = require('node-http-error')
 const Logger = require('@ydv/logger')
 const { connect: dbConnect } = require('@ydv/mongo')
 
+const identity = n => n
+
 module.exports = createFunction
 
-function createFunction (fn, { json = true } = {}) {
+function createFunction (fn, { json = true, runBefore = identity, runAfter = identity } = {}) {
   const wrapped = slsp(wrapHandler)
   return function handler (event, context, callback) {
     context.log = Logger(`${event.httpMethod} ${event.resource}`)
@@ -30,7 +32,9 @@ function createFunction (fn, { json = true } = {}) {
     dbConnect()
 
     return Promise.resolve()
+      .then(runBefore)
       .then(runHandler)
+      .then(result => runAfter(result))
       .catch(handleError)
 
     function runHandler () {

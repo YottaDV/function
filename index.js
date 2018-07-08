@@ -29,26 +29,22 @@ function createFunction (fn, { json = true, runBefore, runAfter } = {}) {
     context.callbackWaitsForEmptyEventLoop = false
     dbConnect()
 
+    if (json && event.body) {
+      try {
+        event.body = JSON.parse(event.body)
+      } catch (e) {
+        throw HttpError(415, 'Expected valid JSON request body.')
+      }
+    }
+    if (typeof event.query === 'string') {
+      event.query = qs.parse(event.query)
+    }
+
     return Promise.resolve()
       .then(!runBefore ? null : () => runBefore(event, context))
-      .then(runHandler)
+      .then(() => fn(event, context))
       .then(!runAfter ? null : (result) => runAfter(event, context, result))
       .catch(handleError)
-
-    function runHandler () {
-      if (json && event.body) {
-        try {
-          event.body = JSON.parse(event.body)
-        } catch (e) {
-          throw HttpError(415, 'Expected valid JSON request body.')
-        }
-      }
-      if (typeof event.query === 'string') {
-        event.query = qs.parse(event.query)
-      }
-
-      return fn(event, context)
-    }
 
     function handleError (error) {
       error.statusCode = error.status || error.statusCode || 500

@@ -8,7 +8,6 @@
     "@ydv/logger": "^1.0.2",
     "@ydv/mongo": "^1.1.2",
     "node-http-error": "^2.0.0",
-    "querystring": "^0.2.0",
     "sls-promise": "^1.0.8"
   },
   "devDependencies": {

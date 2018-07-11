@@ -1,5 +1,4 @@
 const slsp = require('sls-promise')
-const qs = require('querystring')
 const HttpError = require('node-http-error')
 const Logger = require('@ydv/logger')
 const { connect: dbConnect } = require('@ydv/mongo')
@@ -41,9 +40,8 @@ function createFunction (fn, { json = true } = {}) {
           throw HttpError(415, 'Expected valid JSON request body.')
         }
       }
-      if (typeof event.query === 'string') {
-        event.query = qs.parse(event.query)
-      }
+      event.queryStringParameters = event.queryStringParameters || {}
+      event.pathParameters = event.pathParameters || {}
 
       return fn(event, context)
     }

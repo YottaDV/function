@@ -10,6 +10,10 @@ function createFunction (fn, { json = true } = {}) {
   return function handler (event, context, callback) {
     context.log = Logger(`${event.httpMethod} ${event.resource}`)
 
+    context.log.silly(`Booting up a function at ${event.httpMethod} ${event.resource}`, {
+      MONGO_URL: process.env.MONGO_URL
+    })
+
     return wrapped(event, context, function (error, result) {
       const code = result && result.statusCode
       if (code < 200 || code >= 400) {

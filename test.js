@@ -55,3 +55,23 @@ test('advanced error', t => {
     t.end()
   })
 })
+
+test('runBefore', t => {
+  t.plan(4)
+
+  const myCtx = {}
+  const fn = createFn(
+    (event, context) => {
+      t.equal(context, myCtx)
+      t.deepEqual(event.body, {foo: 1})
+    },
+    {
+      runBefore: (event, context) => {
+        t.equal(context, myCtx)
+        t.deepEqual(event.body, {foo: 1})
+      }
+    }
+  )
+
+  fn({ body: JSON.stringify({ foo: 1 }) }, myCtx, () => {})
+})

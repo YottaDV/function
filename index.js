@@ -6,7 +6,7 @@ const { connect: dbConnect } = require('@ydv/mongo')
 
 module.exports = createFunction
 
-function createFunction (fn, { json = true } = {}) {
+function createFunction (fn, { json = true, runBefore } = {}) {
   const wrapped = slsp(wrapHandler)
   return function handler (event, context, callback) {
     context.log = Logger(`${event.httpMethod} ${event.resource}`)
@@ -33,23 +33,24 @@ function createFunction (fn, { json = true } = {}) {
     context.callbackWaitsForEmptyEventLoop = false
     dbConnect()
 
-    return Promise.resolve()
-      .then(runHandler)
-      .catch(handleError)
-
-    function runHandler () {
-      if (json && event.body) {
-        try {
-          event.body = JSON.parse(event.body)
-        } catch (e) {
-          throw HttpError(415, 'Expected valid JSON request body.')
-        }
+    if (json && event.body) {
+      try {
+        event.body = JSON.parse(event.body)
+      } catch (e) {
+        throw HttpError(415, 'Expected valid JSON request body.')
       }
-      event.queryStringParameters = qs.parse(event.queryStringParameters || {})
-      event.pathParameters = event.pathParameters || {}
-
-      return fn(event, context)
     }
+    event.queryStringParameters = qs.parse(event.queryStringParameters || {})
+    event.pathParameters = event.pathParameters || {}
+
+    return Promise.resolve()
+      .then(
+        typeof runBefore === 'function'
+          ? () => runBefore(event, context)
+          : null
+      )
+      .then(() => fn(event, context))
+      .catch(handleError)
 
     function handleError (error) {
       error.statusCode = error.status || error.statusCode || 500

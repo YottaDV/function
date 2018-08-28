@@ -3,22 +3,26 @@ const qs = require('qs')
 const HttpError = require('node-http-error')
 const Logger = require('@ydv/logger')
 const { connect: dbConnect } = require('@ydv/mongo')
+const wrapAzureOrLambdaHandler = require('./wrap-azure-lambda')
 
 module.exports = createFunction
 
 function createFunction (fn, { json = true, runBefore } = {}) {
   const wrapped = slsp(wrapHandler)
-  return function handler (event, context, callback) {
-    context.log = Logger(`${event.httpMethod} ${event.resource}`)
 
-    context.log.silly(`Booting up a function at ${event.httpMethod} ${event.resource}`, {
+  return wrapAzureOrLambdaHandler(handler)
+
+  function handler (event, context, callback) {
+    event.log = Logger(`${event.httpMethod} ${event.resource}`)
+
+    event.log.silly(`Booting up a function at ${event.httpMethod} ${event.resource || event.originalUrl}`, {
       MONGO_URL: process.env.MONGO_URL
     })
 
     return wrapped(event, context, function (error, result) {
       const code = result && result.statusCode
       if (code < 200 || code >= 400) {
-        context.log.silly('error response:', result)
+        event.log.silly('error response:', result)
       }
       callback(error, result)
     })
@@ -54,7 +58,7 @@ function createFunction (fn, { json = true, runBefore } = {}) {
 
     function handleError (error) {
       error.statusCode = error.status || error.statusCode || 500
-      context.log.silly(error.stack)
+      event.log.silly(error.stack)
       return Promise.reject(slsp.response({
         statusCode: error.statusCode,
         body: { code: error.code, message: error.message }

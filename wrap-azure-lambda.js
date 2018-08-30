@@ -8,10 +8,10 @@ module.exports = function wrapAzureOrLambdaHandler (handler) {
       // Azure log compatibility
       if (!console) {
         global.console = {
-          log: context.log.bind(context),
-          error: context.log.bind(context),
-          info: context.log.bind(context),
-          warn: context.log.bind(context)
+          log: (...args) => context.log.info(...args),
+          error: (...args) => context.log.info(...args),
+          info: (...args) => context.log.info(...args),
+          warn: (...args) => context.log.info(...args)
         }
       }
 

@@ -4,18 +4,10 @@ const wrap = require('./wrap-azure-lambda')
 
 test('wrapAzureOrLambdaHandler: azure', (t) => {
   const context = {
-    log: () => console.log,
-    done: (error) => {
-      t.notOk(error)
-      t.deepEqual(context.res, {
-        status: 200,
-        body: JSON.stringify({ goodbye: 'world', fooIs: 1, barIs: 2 }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-      t.end()
-    }
+    log: {
+      info: (...args) => console.log(...args)
+    },
+    done: () => {}
   }
 
   const req = {
@@ -34,5 +26,14 @@ test('wrapAzureOrLambdaHandler: azure', (t) => {
   })
 
   const fn = wrap(handler)
-  fn(context, req)
+  fn(context, req).then(() => {
+    t.deepEqual(context.res, {
+      status: 200,
+      body: JSON.stringify({ goodbye: 'world', fooIs: 1, barIs: 2 }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    t.end()
+  })
 })

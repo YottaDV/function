@@ -1,9 +1,12 @@
 module.exports = function wrapAzureOrLambdaHandler (handler) {
   return function (arg1, arg2, arg3) {
     // Azure! function (context, req)
-    if (arg1 && typeof arg1.log === 'function' && typeof arg1.done === 'function') {
+    if (arg1 && arg1.log && typeof arg1.log.info === 'function' && typeof arg1.done === 'function') {
       const context = arg1
       const req = arg2
+
+      context.log.info('We are in Azure')
+      context.log.info(context)
 
       // Azure log compatibility
       if (!console) {
@@ -23,17 +26,20 @@ module.exports = function wrapAzureOrLambdaHandler (handler) {
         pathParameters: req.params,
         httpMethod: req.method
       })
-      return handler(req, context, (error, result) => {
-        if (error) return context.done(error)
-        context.res = {
-          body: result.body,
-          headers: result.headers,
-          status: result.statusCode
-        }
-        context.done()
+
+      return new Promise((resolve, reject) => {
+        handler(req, context, (error, result) => {
+          if (error) return reject(error)
+          context.res = {
+            body: result.body,
+            headers: result.headers,
+            status: result.statusCode
+          }
+          resolve()
+        })
       })
     } else {
-      return handler(arg1, arg2, arg3)
+      handler(arg1, arg2, arg3)
     }
   }
 }

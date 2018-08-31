@@ -6,7 +6,6 @@ module.exports = function wrapAzureOrLambdaHandler (handler) {
       const req = arg2
 
       context.log.info('We are in Azure')
-      context.log.info(context)
 
       // Azure log compatibility
       if (!console) {

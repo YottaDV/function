@@ -2,12 +2,13 @@ const slsp = require('sls-promise')
 const qs = require('qs')
 const HttpError = require('node-http-error')
 const Logger = require('@ydv/logger')
-const { connect: dbConnect } = require('@ydv/mongo')
 const wrapAzureOrLambdaHandler = require('./wrap-azure-lambda')
+
+const requireMongo = () => require('@ydv/mongo')
 
 module.exports = createFunction
 
-function createFunction (fn, { json = true, runBefore } = {}) {
+function createFunction (fn, { json = true, runBefore, noDatabase } = {}) {
   const wrapped = slsp(wrapHandler)
 
   return wrapAzureOrLambdaHandler(handler)
@@ -35,7 +36,9 @@ function createFunction (fn, { json = true, runBefore } = {}) {
     // The first call to this lambda function takes longer to complete and connect, while subsequent
     // close calls will take no time.
     context.callbackWaitsForEmptyEventLoop = false
-    dbConnect()
+    if (!noDatabase) {
+      requireMongo().connect()
+    }
 
     if (json && event.body) {
       try {

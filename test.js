@@ -1,15 +1,10 @@
 const test = require('tape')
-const proxyquire = require('proxyquire')
-const createFn = proxyquire('./', {
-  '@ydv/mongo': {
-    connect: () => {}
-  }
-})
+const createFn = require('./')
 
 test('ok', t => {
   const myCtx = {}
   const fn = createFn((event, context) => {
-    t.deepEqual(event.body, {foo: 1})
+    t.deepEqual(event.body, { foo: 1 })
     t.equal(context, myCtx)
     return { this: 'is so cool' }
   })

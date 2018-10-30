@@ -4,11 +4,9 @@ const HttpError = require('node-http-error')
 const Logger = require('@ydv/logger')
 const wrapAzureOrLambdaHandler = require('./wrap-azure-lambda')
 
-const requireMongo = () => require('@ydv/mongo')
-
 module.exports = createFunction
 
-function createFunction (fn, { json = true, runBefore, noDatabase } = {}) {
+function createFunction (fn, { json = true, runBefore } = {}) {
   const wrapped = slsp(wrapHandler)
 
   return wrapAzureOrLambdaHandler(handler)
@@ -16,9 +14,7 @@ function createFunction (fn, { json = true, runBefore, noDatabase } = {}) {
   function handler (event, context, callback) {
     event.log = Logger(`${event.httpMethod} ${event.resource}`)
 
-    event.log.silly(`Booting up a function at ${event.httpMethod} ${event.resource || event.originalUrl}`, {
-      MONGO_URL: process.env.MONGO_URL
-    })
+    event.log.silly(`Booting up a function at ${event.httpMethod} ${event.resource || event.originalUrl}`)
 
     return wrapped(event, context, function (error, result) {
       const code = result && result.statusCode
@@ -30,16 +26,6 @@ function createFunction (fn, { json = true, runBefore, noDatabase } = {}) {
   }
 
   function wrapHandler (event, context) {
-    // https://www.mongodb.com/blog/post/serverless-development-with-nodejs-aws-lambda-mongodb-atlas
-    // the following line is critical for performance reasons to allow re-use of database
-    // connections across calls to this Lambda function and avoid closing the database connection.
-    // The first call to this lambda function takes longer to complete and connect, while subsequent
-    // close calls will take no time.
-    context.callbackWaitsForEmptyEventLoop = false
-    if (!noDatabase) {
-      requireMongo().connect()
-    }
-
     if (json && event.body) {
       try {
         event.body = JSON.parse(event.body)

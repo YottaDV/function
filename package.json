@@ -5,13 +5,11 @@
     "test": "standard && tape '*test.js'"
   },
   "dependencies": {
-    "@ydv/logger": "^1.0.2",
-    "@ydv/mongo": "^1.1.2",
+    "@ydv/logger": "^1.0.3",
     "node-http-error": "^2.0.0",
     "sls-promise": "^1.0.8"
   },
   "devDependencies": {
-    "proxyquire": "^2.0.1",
     "standard": "^11.0.1",
     "tape": "^4.9.1"
   }
